@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <link rel="icon" href="image/icon.ico" />
+  <title>LCSD Leisure Link - Searching</title>
+  <style>
+    .card {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      width: 500px;
+      margin: 0 auto;
+      border-radius: -3px;
+      display: auto;
+      flex-shrink:0;
+      justify-content: center;
+    }
+  </style>
+
+  <script>
+    var request = new XMLHttpRequest();
+
+    function search() {
+      var district = document.getElementById("district");
+      var dist = district.value;
+      var url = "http://localhost/atwdcw/index.php/search/District/" + dist;
+      request.open("GET", url, true);
+      request.onreadystatechange = page;
+      request.send(null);
+    }
+
+
+    function page() {
+      if (request.readyState == 4) {
+        if (request.status == 200) {
+          var serverData = request.responseText;
+          var area = document.getElementById("disArea");
+          reArray = JSON.parse(serverData);
+         
+          if (serverData!=null){
+            if (reArray[0].hasOwnProperty('bkId')) {
+              html = '<table class="table table-hover">';
+              html += '<thead class="table-light">';
+              html += "<tr><th>Basketball ID:</th><th>District:</th><th>Name:</th><th>Address:</th><th>Opening_hours:</th><th>Phone:</th><th>Details:</th><th>Edit:</th></tr>";
+              html += "</thead>";
+              html += "<tbody>";
+              reArray.forEach(record);
+              html += "</tbody>";
+              html += "</table>";
+              area.innerHTML = html;
+            } else {
+              var area = document.getElementById("disArea")
+              html = '<div class="alert alert-danger" role="alert">';
+              html += JSON.stringify(reArray);
+              html += "</div>";
+              area.innerHTML = html;
+            }
+          } else {
+            var area = document.getElementById("disArea")
+              html = '<div class="alert alert-danger" role="alert">';
+              html += JSON.stringify(reArray);
+              html += "</div>";
+              area.innerHTML = html;
+          }
+
+        }
+      }
+    }
+
+    function detailpage(bkId) {
+      for (item of reArray) {
+        if (item['bkId'] == bkId) {
+          District_en = item['District_en'];
+          Name_en = item['Name_en'];
+          Address_en = item['Address_en'];
+          GIHS = item['GIHS'];
+          Court_no_en = item['Court_no_en'];
+          Ancillary_facilities_en = item['Ancillary_facilities_en'];
+          Opening_hours_en = item['Opening_hours_en'];
+          Phone = item['Phone'];
+          Remarks_en = item['Remarks_en'];
+          Longitude = item['Longitude'];
+          Latitude = item['Latitude'];
+          break;
+        }
+      }
+      document.getElementById("basketballId").value = bkId;
+      document.getElementById("bskDistrict").value = District_en;
+      document.getElementById("bskName").value = Name_en;
+      document.getElementById("bskAddress").value = Address_en;
+      document.getElementById("bskGihs").value = GIHS;
+      document.getElementById("bskCourt").value = Court_no_en;
+      document.getElementById("bskAF").value = Ancillary_facilities_en;
+      document.getElementById("bskOpenhrs").value = Opening_hours_en;
+      document.getElementById("bskPhone").value = Phone;
+      document.getElementById("bskRemarks").value = Remarks_en;
+      document.getElementById("bskLongitude").value = Longitude;
+      document.getElementById("bskLatitude").value = Latitude;
+    }
+
+    function record(result) {
+      html += "<tr>";
+      html += "<td>" + result['bkId'];
+      html += "<td>" + result['District_en'];
+      html += "<td>" + result['Name_en'];
+      html += "<td>" + result['Address_en'];
+      html += "<td>" + result['Opening_hours_en'];
+      html += "<td>" + result['Phone'];
+      html +=
+        '<td><button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#detailModal"';
+      html += "onclick='detailpage(";
+      html += result['bkId'];
+      html += ")'>";
+      html += "<img src='image/detail.png'></button>";
+      html += "</td>";
+      html +=
+        '<td><button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#updateModal"';
+      html += "onclick='update(";
+      html += result['bkId'];
+      html += ")'>";
+      html += "<img src='image/edit.png'></button>";
+      html += "</td>";
+      html += "</tr>";
+    }
+
+    function distFun(districtid) {
+      var ele = document.getElementById("district");
+      ele.value = districtid;
+    }
+
+    function add() {
+
+      var district = document.getElementById("bskDistrict_add").value;
+      var name = document.getElementById("bskName_add").value;
+      var address = document.getElementById("bskAddress_add").value;
+      var gihs = document.getElementById("bskGihs_add").value;
+      var court = document.getElementById("bskCourt_add").value;
+      var facilities = document.getElementById("bskAF_add").value;
+      var openhrs = document.getElementById("bskOpenhrs_add").value;
+      var phone = document.getElementById("bskPhone_add").value;
+      var remarks = document.getElementById("bskRemarks_add").value;
+      var longitude = document.getElementById("bskLongitude_add").value;
+      var latitude = document.getElementById("bskLatitude_add").value;
+      var url = "http://localhost/atwdcw/index.php/search/add/" + district + "/" + name + "/" + address + "/" + gihs +
+        "/" + court + "/" +
+        facilities + "/" + openhrs + "/" + phone + "/" + remarks + "/" + longitude + "/" + latitude;
+
+      request.open("POST", url, true);
+      request.onreadystatechange = showAdd;
+      request.send(null);
+    }
+
+    function update(bkId) {
+      for (item of reArray) {
+        if (item['bkId'] == bkId) {
+          District_en = item['District_en'];
+          Name_en = item['Name_en'];
+          Address_en = item['Address_en'];
+          GIHS = item['GIHS'];
+          Court_no_en = item['Court_no_en'];
+          Ancillary_facilities_en = item['Ancillary_facilities_en'];
+          Opening_hours_en = item['Opening_hours_en'];
+          Phone = item['Phone'];
+          Remarks_en = item['Remarks_en'];
+          Longitude = item['Longitude'];
+          Latitude = item['Latitude'];
+          break;
+        }
+      }
+      document.getElementById("basketballId_ud").value = bkId;
+      document.getElementById("bskDistrict_ud").value = District_en;
+      document.getElementById("bskName_ud").value = Name_en;
+      document.getElementById("bskAddress_ud").value = Address_en;
+      document.getElementById("bskGihs_ud").value = GIHS;
+      document.getElementById("bskCourt_ud").value = Court_no_en;
+      document.getElementById("bskAF_ud").value = Ancillary_facilities_en;
+      document.getElementById("bskOpenhrs_ud").value = Opening_hours_en;
+      document.getElementById("bskPhone_ud").value = Phone;
+      document.getElementById("bskRemarks_ud").value = Remarks_en;
+      document.getElementById("bskLongitude_ud").value = Longitude;
+      document.getElementById("bskLatitude_ud").value = Latitude;
+    }
+
+    function goUpdate() {
+      var bkid = document.getElementById("basketballId_ud").value;
+      var district = document.getElementById("bskDistrict_ud").value;
+      var name = document.getElementById("bskName_ud").value;
+      var address = document.getElementById("bskAddress_ud").value;
+      var gihs = document.getElementById("bskGihs_ud").value;
+      var court = document.getElementById("bskCourt_ud").value;
+      var facilities = document.getElementById("bskAF_ud").value;
+      var openhrs = document.getElementById("bskOpenhrs_ud").value;
+      var phone = document.getElementById("bskPhone_ud").value;
+      var remarks = document.getElementById("bskRemarks_ud").value;
+      var longitude = document.getElementById("bskLongitude_ud").value;
+      var latitude = document.getElementById("bskLatitude_ud").value;
+      var url = "http://localhost/atwdcw/index.php/search/update/" + bkid + "/" + district + "/" + name + "/" +
+        address + "/" + gihs + "/" + court + "/" +
+        facilities + "/" + openhrs + "/" + phone + "/" + remarks + "/" + longitude + "/" + latitude;
+      request.open("PUT", url, true);
+      request.onreadystatechange = showUpdate;
+      request.send(null);
+    }
+
+    function godelete() {
+      var bkId = document.getElementById("basketballId").value;
+      var url = "http://localhost/atwdcw/index.php/search/delete/" + bkId;
+      request.open("DELETE", url, true);
+      request.onreadystatechange = showDelete;
+      request.send(null);
+    }
+
+    function showAdd() {
+      if (request.readyState == 4) {
+        if (request.status == 200) {
+          var serverMsg = request.responseText;
+          var area = document.getElementById("disArea")
+          html = '<div class="alert alert-success" role="alert">';
+          html += serverMsg;
+          html += "</div>";
+          area.innerHTML = html;
+          document.getElementById('buttonclose2').click();
+        }
+      }
+    }
+
+    function showUpdate() {
+      if (request.readyState == 4) {
+        if (request.status == 200) {
+          var serverMsg = request.responseText;
+          var area = document.getElementById("disArea")
+          html = '<div class="alert alert-success" role="alert">';
+          html += serverMsg;
+          html += "</div>";
+          area.innerHTML = html;
+          document.getElementById('buttonclose3').click();      
+        }
+      }
+    }
+
+    function showDelete() {
+      if (request.readyState == 4) {
+        if (request.status == 200) {
+          var serverMsg = request.responseText;
+          var area = document.getElementById("disArea")
+          html = '<div class="alert alert-success" role="alert">';
+          html += serverMsg;
+          html += "</div>";
+          area.innerHTML = html;
+          document.getElementById('buttonclose').click();
+        }
+      }
+    }
+  </script>
+</head>
+
+<boby>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous">
+  </script>
+
+  <nav class="navbar navbar-light bg-light">
+    <img src="image/logo.png" style="padding-top: 10px;" height="80px" width="auto">
+  </nav>
+
+  <div class="card" id="dropdown" class="card" style="margin-top:5%;">
+    <div style="margin-top:5px; margin: 5px; margin-bottom: 10px;">
+      <table>
+        <td>
+          <h4 class="text-secondary">Search:</h4>
+        </td>
+        <tr>
+          <td style="width: 100%;">
+            <select class="form-select" aria-label="Default select example" onchange="location = this.value;">
+              <option selected disabled>Please select a district</option>
+              <option value="javascript:distFun('Kowloon City')">Kowloon City</option>
+              <option value="javascript:distFun('Tai Po')">Tai Po</option>
+              <option value="javascript:distFun('Central & Western')">Central & Western</option>
+              <option value="javascript:distFun('Yuen Long')">Yuen Long</option>
+              <option value="javascript:distFun('Tuen Mun')">Tuen Mun</option>
+              <option value="javascript:distFun('North')">North</option>
+              <option value="javascript:distFun('Sai Kung')">Sai Kung</option>
+              <option value="javascript:distFun('Sha Tin')">Sha Tin</option>
+              <option value="javascript:distFun('Eastern')">Eastern</option>
+              <option value="javascript:distFun('Wan Chai')">Wan Chai</option>
+              <option value="javascript:distFun('Yau Tsim Mong')">Yan Tsim Mong</option>
+              <option value="javascript:distFun('Southern')">Southern</option>
+              <option value="javascript:distFun('Tsuen Wan')">Tsuen Wan</option>
+              <option value="javascript:distFun('Sham Shui Po')">Sham Shui Po</option>
+              <option value="javascript:distFun('Wong Tai Sin')">Wong Tai Sin</option>
+              <option value="javascript:distFun('Kwai Tsing')">Kwai Tsing</option>
+              <option value="javascript:distFun('Islands')">Islands</option>
+              <option value="javascript:distFun('Kwun Tong')">Kwun Tong</option>
+            </select>
+          </td>
+
+          <td>
+            <button type="button" class="btn btn-outline-primary" style="width: 100%;" data-bs-toggle="modal"
+              data-bs-target="#addModal">Add</button>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <input type="text" class="form-control" placeholder="Enter a district..." aria-describedby="basic-addon2"
+              id="district">
+          </td>
+          <td>
+            <button type="button" class="btn btn-outline-secondary" style="width: 100%;"
+              onclick="search()">Search</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal fade" id="detailModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="confirmDetail" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmDetail">Details:</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body" style="width:auto;">
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Basketball ID:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="basketballId" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">District:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskDistrict" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Name:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskName" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Address:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskAddress" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">GIHS:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskGihs" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Court:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskCourt" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Ancillary facilities:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskAF" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Opening hours:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskOpenhrs" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Phone:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskPhone" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Remarks:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskRemarks" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Longitude:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskLongitude" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Latitude:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskLatitude" readonly>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="buttonclose1" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+            data-bs-target="#confirmDelete">Delete</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="addModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="confirmAdd" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmAdd">Add new record:</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body" style="width:auto;">
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">District:</span>
+            <td style="width: 100%;">
+              <select id="bskDistrict_add" class="form-select" aria-label="Default select example">
+                <option selected disabled>Please select a district</option>
+                <option value="Kowloon City">Kowloon City</option>
+                <option value="Tai Po">Tai Po</option>
+                <option value="Central & Western">Central & Western</option>
+                <option value="Yuen Long">Yuen Long</option>
+                <option value="Tuen Mun">Tuen Mun</option>
+                <option value="North">North</option>
+                <option value="Sai Kung">Sai Kung</option>
+                <option value="Sha Tin">Sha Tin</option>
+                <option value="Eastern">Eastern</option>
+                <option value="Wan Chai">Wan Chai</option>
+                <option value="Yau Tsim Mong">Yan Tsim Mong</option>
+                <option value="Southern">Southern</option>
+                <option value="Tsuen Wan">Tsuen Wan</option>
+                <option value="Sham Shui Po">Sham Shui Po</option>
+                <option value="Wong Tai Sin">Wong Tai Sin</option>
+                <option value="Kwai Tsing">Kwai Tsing</option>
+                <option value="Islands">Islands</option>
+                <option value="Kwun Tong">Kwun Tong</option>
+              </select>
+            </td>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Name:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskName_add">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Address:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskAddress_add">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">GIHS:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskGihs_add">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Court:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskCourt_add">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Ancillary facilities:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskAF_add">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Opening hours:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskOpenhrs_add">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Phone:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskPhone_add">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Remarks:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskRemarks_add">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Longitude:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskLongitude_add">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Latitude:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskLatitude_add">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="buttonclose2" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="add()">Add</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="updateModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="confirmUpdate" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmAdd">Update record:</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body" style="width:auto;">
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Basketball ID:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="basketballId_ud" readonly>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">District:</span>
+            <td style="width: 100%;">
+              <select id="bskDistrict_ud" class="form-select" aria-label="Default select example">
+                <option selected disabled>Please select a district</option>
+                <option value="Kowloon City">Kowloon City</option>
+                <option value="Tai Po">Tai Po</option>
+                <option value="Central & Western">Central & Western</option>
+                <option value="Yuen Long">Yuen Long</option>
+                <option value="Tuen Mun">Tuen Mun</option>
+                <option value="North">North</option>
+                <option value="Sai Kung">Sai Kung</option>
+                <option value="Sha Tin">Sha Tin</option>
+                <option value="Eastern">Eastern</option>
+                <option value="Wan Chai">Wan Chai</option>
+                <option value="Yau Tsim Mong">Yan Tsim Mong</option>
+                <option value="Southern">Southern</option>
+                <option value="Tsuen Wan">Tsuen Wan</option>
+                <option value="Sham Shui Po">Sham Shui Po</option>
+                <option value="Wong Tai Sin">Wong Tai Sin</option>
+                <option value="Kwai Tsing">Kwai Tsing</option>
+                <option value="Islands">Islands</option>
+                <option value="Kwun Tong">Kwun Tong</option>
+              </select>
+            </td>
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Name:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskName_ud">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Address:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskAddress_ud">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">GIHS:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskGihs_ud">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Court:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskCourt_ud">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Ancillary facilities:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskAF_ud">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Opening hours:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskOpenhrs_ud">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Phone:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskPhone_ud">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Remarks:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskRemarks_ud">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Longitude:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskLongitude_ud">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <span class="input-group-text">Latitude:</span>
+            <input type="text" class="form-control" aria-label="Sizing example input"
+              aria-describedby="inputGroup-sizing-sm" id="bskLatitude_ud">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="buttonclose3" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-warning" onclick="goUpdate()">Update</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="confirmDelete" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmDeleteLabel">Confirm Delete:</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure to delete this record?
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="buttonclose" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger" onclick="godelete()">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="disArea" class="area" style="margin-top:20px; margin:50px;"></div>
+
+</boby>
+</html>
